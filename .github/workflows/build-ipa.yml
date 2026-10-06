@@ -23,13 +23,14 @@ jobs:
             -sdk iphoneos \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             build
 
       - name: Fake-sign with entitlements
         run: |
-          APP_DIR="build/Build/Products/Release-iphoneos/JevJarvis.app"
+          APP_DIR=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -type d -name "JevJarvis.app" | head -1)
+          echo "APP_DIR=$APP_DIR"
+          test -n "$APP_DIR"
           ls "$APP_DIR"
           ls "$APP_DIR/PlugIns"
           cat > /tmp/app.entitlements << 'ENT_EOF'
@@ -66,14 +67,14 @@ jobs:
 
       - name: Package IPA
         run: |
-          cd build/Build/Products/Release-iphoneos
-          mkdir -p Payload
-          cp -r JevJarvis.app Payload/
-          zip -qr JevJarvis-unsigned.ipa Payload
-          ls -lh JevJarvis-unsigned.ipa
+          APP_DIR=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -type d -name "JevJarvis.app" | head -1)
+          mkdir -p /tmp/ipa/Payload
+          cp -R "$APP_DIR" /tmp/ipa/Payload/
+          cd /tmp/ipa && zip -qr "$GITHUB_WORKSPACE/JevJarvis-unsigned.ipa" Payload
+          ls -lh "$GITHUB_WORKSPACE/JevJarvis-unsigned.ipa"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: JevJarvis-unsigned-ipa
-          path: build/Build/Products/Release-iphoneos/JevJarvis-unsigned.ipa
+          path: JevJarvis-unsigned.ipa
