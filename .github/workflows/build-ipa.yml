@@ -28,9 +28,9 @@ jobs:
 
       - name: Fake-sign with entitlements
         run: |
-          APP_DIR=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -type d -name "JevJarvis.app" | head -1)
+          APP_DIR="$GITHUB_WORKSPACE/build/Release-iphoneos/JevJarvis.app"
           echo "APP_DIR=$APP_DIR"
-          test -n "$APP_DIR"
+          test -d "$APP_DIR"
           ls "$APP_DIR"
           ls "$APP_DIR/PlugIns"
           cat > /tmp/app.entitlements << 'ENT_EOF'
@@ -67,7 +67,7 @@ jobs:
 
       - name: Package IPA
         run: |
-          APP_DIR=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -type d -name "JevJarvis.app" | head -1)
+          APP_DIR="$GITHUB_WORKSPACE/build/Release-iphoneos/JevJarvis.app"
           mkdir -p /tmp/ipa/Payload
           cp -R "$APP_DIR" /tmp/ipa/Payload/
           cd /tmp/ipa && zip -qr "$GITHUB_WORKSPACE/JevJarvis-unsigned.ipa" Payload
